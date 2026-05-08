@@ -154,7 +154,7 @@ const Sidebar = ({
                   </button>
                   <button 
                     onClick={() => toggleComplete(item.id)}
-                    className={`flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-[11px] font-bold transition-all active:scale-95 shadow-sm ${
+                    className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-[11px] font-bold transition-all active:scale-95 shadow-sm ${
                       completedItems.includes(item.id)
                         ? 'bg-green-600 text-white hover:bg-green-700 shadow-green-100'
                         : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'

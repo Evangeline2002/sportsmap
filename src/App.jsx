@@ -52,8 +52,9 @@ function App() {
   };
 
   const useFallbackData = () => {
-    const processed = localData.map(item => ({
+    const processed = localData.map((item, index) => ({
       ...item,
+      id: item.id ? `local-${item.District}-${item.id}` : `local-${index}`,
       lat: item.lat || getDistrictCenter(item.District || item.district)[0] + (Math.random() - 0.5) * 0.1,
       lng: item.lng || getDistrictCenter(item.District || item.district)[1] + (Math.random() - 0.5) * 0.1
     }));
@@ -100,12 +101,16 @@ function App() {
     const item = data.find(i => i.id === id);
     if (!item) return;
 
+    const newStatus = !item.completed;
+    
+    // Optimistic update: Update local state immediately
+    setData(prev => prev.map(i => i.id === id ? { ...i, completed: newStatus } : i));
+
     try {
-      const newStatus = !item.completed;
+      // Attempt server update if applicable
       await axios.patch(`${API_URL}/records/${id}`, { completed: newStatus });
-      setData(prev => prev.map(i => i.id === id ? { ...i, completed: newStatus } : i));
     } catch (error) {
-      console.error("Error updating status:", error);
+      console.error("Error updating status on server (ignoring for local mode):", error);
     }
   };
 
