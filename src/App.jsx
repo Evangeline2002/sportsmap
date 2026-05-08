@@ -4,6 +4,7 @@ import { Search, Map as MapIcon, Upload, CheckCircle2, Loader2, BarChart3, Chevr
 import { TN_DISTRICTS, CATEGORIES } from './utils/tnDistricts';
 import MapView from './components/MapView';
 import Sidebar from './components/Sidebar';
+import localData from './data/records.json';
 
 const API_URL = 'http://localhost:5500/api';
 
@@ -24,27 +25,40 @@ function App() {
     setIsLoading(true);
     try {
       const response = await axios.get(`${API_URL}/records`);
-      const processed = response.data.map(item => {
-        if (!item.lat || !item.lng) {
-          const districtCenter = TN_DISTRICTS.find(d => 
-            d.name.toLowerCase() === (item.District || item.district)?.toLowerCase()
-          )?.center || [11.1271, 78.6569];
-          return {
-            ...item,
-            id: item._id,
-            lat: item.lat || districtCenter[0] + (Math.random() - 0.5) * 0.1,
-            lng: item.lng || districtCenter[1] + (Math.random() - 0.5) * 0.1
-          };
-        }
-        return { ...item, id: item._id };
-      });
-      setData(processed);
-      setFilteredData(processed);
+      if (response.data && response.data.length > 0) {
+        const processed = response.data.map(item => ({
+          ...item,
+          id: item._id || item.id,
+          lat: item.lat || getDistrictCenter(item.District || item.district)[0],
+          lng: item.lng || getDistrictCenter(item.District || item.district)[1]
+        }));
+        setData(processed);
+        setFilteredData(processed);
+      } else {
+        useFallbackData();
+      }
     } catch (error) {
-      console.error("Error fetching records:", error);
+      console.error("Error fetching records, using local data:", error);
+      useFallbackData();
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const getDistrictCenter = (district) => {
+    return TN_DISTRICTS.find(d => 
+      d.name.toLowerCase() === district?.toLowerCase()
+    )?.center || [11.1271, 78.6569];
+  };
+
+  const useFallbackData = () => {
+    const processed = localData.map(item => ({
+      ...item,
+      lat: item.lat || getDistrictCenter(item.District || item.district)[0] + (Math.random() - 0.5) * 0.1,
+      lng: item.lng || getDistrictCenter(item.District || item.district)[1] + (Math.random() - 0.5) * 0.1
+    }));
+    setData(processed);
+    setFilteredData(processed);
   };
 
   const handleFileUpload = async (e) => {
@@ -140,13 +154,15 @@ function App() {
             selectedItem={selectedItem} 
             onItemClick={setSelectedItem}
             completedItems={data.filter(i => i.completed).map(i => i.id)}
+            selectedDistrict={selectedDistrict}
+            allDistricts={TN_DISTRICTS}
           />
         </div>
 
         <div className="w-full md:w-[400px] lg:w-[450px] bg-white border-l border-slate-200 shadow-2xl z-10 flex flex-col order-1 md:order-2 h-[60vh] md:h-full">
            <Sidebar 
              data={filteredData}
-             districts={TN_DISTRICTS.map(d => d.name)}
+             districts={[...new Set(data.map(item => item.District || item.district))].filter(Boolean)}
              categories={CATEGORIES}
              selectedDistrict={selectedDistrict}
              setSelectedDistrict={setSelectedDistrict}

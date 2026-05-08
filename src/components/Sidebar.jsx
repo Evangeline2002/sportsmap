@@ -15,11 +15,14 @@ const Sidebar = ({
   onViewOnMap
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [displayLimit, setDisplayLimit] = useState(50);
 
   const filteredItems = data.filter(item => 
     (item.Name?.toString().toLowerCase().includes(searchTerm.toLowerCase()) || 
      item.Address?.toString().toLowerCase().includes(searchTerm.toLowerCase()))
   );
+
+  const visibleItems = filteredItems.slice(0, displayLimit);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -32,7 +35,10 @@ const Sidebar = ({
             placeholder="Search name or address..." 
             className="w-full pl-10 pr-4 py-2 bg-slate-100 border-none rounded-xl text-sm focus:ring-2 focus:ring-primary-500 transition-all font-medium"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setDisplayLimit(50);
+            }}
           />
         </div>
 
@@ -41,7 +47,10 @@ const Sidebar = ({
             <select 
               className="w-full pl-3 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[11px] font-bold uppercase tracking-tight appearance-none focus:outline-none focus:border-primary-500 cursor-pointer"
               value={selectedDistrict}
-              onChange={(e) => setSelectedDistrict(e.target.value)}
+              onChange={(e) => {
+                setSelectedDistrict(e.target.value);
+                setDisplayLimit(50);
+              }}
             >
               <option value="">All Districts</option>
               {districts.sort().map(d => (
@@ -55,7 +64,10 @@ const Sidebar = ({
             <select 
               className="w-full pl-3 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-[11px] font-bold uppercase tracking-tight appearance-none focus:outline-none focus:border-primary-500 cursor-pointer"
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              onChange={(e) => {
+                setSelectedCategory(e.target.value);
+                setDisplayLimit(50);
+              }}
             >
               <option value="">All Categories</option>
               {categories.map(c => (
@@ -70,7 +82,7 @@ const Sidebar = ({
           <span>Results: {filteredItems.length}</span>
           { (selectedDistrict || selectedCategory || searchTerm) && (
             <button 
-              onClick={() => { setSelectedDistrict(''); setSelectedCategory(''); setSearchTerm(''); }}
+              onClick={() => { setSelectedDistrict(''); setSelectedCategory(''); setSearchTerm(''); setDisplayLimit(50); }}
               className="text-primary-600 hover:text-primary-700 flex items-center gap-1"
             >
               Reset <X size={10} />
@@ -92,14 +104,10 @@ const Sidebar = ({
             </p>
           </div>
         ) : (
-          <AnimatePresence mode="popLayout">
-            {filteredItems.map((item) => (
-              <motion.div
+          <>
+            {visibleItems.map((item) => (
+              <div
                 key={item.id}
-                layout
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.95 }}
                 className={`group p-4 rounded-2xl border transition-all duration-300 shadow-sm hover:shadow-md ${
                   completedItems.includes(item.id) 
                     ? 'bg-green-50/30 border-green-100' 
@@ -156,13 +164,22 @@ const Sidebar = ({
                     {completedItems.includes(item.id) ? 'Done' : 'Mark'}
                   </button>
                 </div>
-              </motion.div>
+              </div>
             ))}
-          </AnimatePresence>
+            {filteredItems.length > displayLimit && (
+              <button 
+                onClick={() => setDisplayLimit(prev => prev + 50)}
+                className="w-full py-3 text-sm font-bold text-primary-600 bg-primary-50 rounded-xl hover:bg-primary-100 transition-colors"
+              >
+                Load More ({filteredItems.length - displayLimit} remaining)
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>
   );
 };
+
 
 export default Sidebar;

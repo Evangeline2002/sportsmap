@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl } from 'react-leaflet';
+import { Phone } from 'lucide-react';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -21,23 +22,28 @@ const redIcon = new L.Icon({
   shadowSize: [41, 41]
 });
 
-const greenIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
+const blueIcon = new L.Icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
+const greenIcon = new L.Icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
+const goldIcon = new L.Icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-gold.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
+const violetIcon = new L.Icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-violet.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
+const orangeIcon = new L.Icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-orange.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
+const yellowIcon = new L.Icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-yellow.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
+const greyIcon = new L.Icon({ iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-grey.png', shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png', iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41] });
 
-const blueIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
+const getCategoryIcon = (category, isCompleted) => {
+  if (isCompleted) return greenIcon;
+  
+  const cat = category?.toLowerCase() || '';
+  if (cat.includes('turf')) return greenIcon;
+  if (cat.includes('football')) return blueIcon;
+  if (cat.includes('swimming')) return violetIcon;
+  if (cat.includes('hub') || cat.includes('club')) return goldIcon;
+  if (cat.includes('cricket') || cat.includes('tennis') || cat.includes('hockey') || cat.includes('basketball') || cat.includes('volleyball')) return orangeIcon;
+  if (cat.includes('school') || cat.includes('class') || cat.includes('badmitton')) return yellowIcon;
+  if (cat.includes('academy')) return violetIcon;
+  
+  return greyIcon;
+};
 
 function MapResizer({ selectedItem }) {
   const map = useMap();
@@ -53,7 +59,28 @@ function MapResizer({ selectedItem }) {
   return null;
 }
 
-const MapView = ({ items, selectedItem, onItemClick, completedItems }) => {
+function MapCenterer({ selectedDistrict, districts }) {
+  const map = useMap();
+  
+  useEffect(() => {
+    if (selectedDistrict) {
+      const district = districts.find(d => d.name === selectedDistrict);
+      if (district) {
+        map.flyTo(district.center, 10, {
+          duration: 1.5
+        });
+      }
+    } else {
+      map.flyTo([11.1271, 78.6569], 7, {
+        duration: 1.5
+      });
+    }
+  }, [selectedDistrict, map, districts]);
+
+  return null;
+}
+
+const MapView = ({ items, selectedItem, onItemClick, completedItems, selectedDistrict, allDistricts }) => {
   const tamilNaduCenter = [11.1271, 78.6569];
 
   return (
@@ -69,6 +96,7 @@ const MapView = ({ items, selectedItem, onItemClick, completedItems }) => {
       />
       <ZoomControl position="bottomright" />
       <MapResizer selectedItem={selectedItem} />
+      <MapCenterer selectedDistrict={selectedDistrict} districts={allDistricts} />
 
       <MarkerClusterGroup
         chunkedLoading
@@ -82,7 +110,7 @@ const MapView = ({ items, selectedItem, onItemClick, completedItems }) => {
             icon={
               selectedItem?.id === item.id 
                 ? redIcon 
-                : (completedItems.includes(item.id) ? greenIcon : blueIcon)
+                : getCategoryIcon(item.Category, completedItems.includes(item.id))
             }
             eventHandlers={{
               click: () => onItemClick(item),
@@ -93,11 +121,19 @@ const MapView = ({ items, selectedItem, onItemClick, completedItems }) => {
                 <h3 className="font-bold text-slate-900 border-b pb-1 mb-1">{item.Name}</h3>
                 <p className="text-[11px] text-slate-600 mb-1 leading-tight">{item.Address}</p>
                 <div className="flex flex-wrap gap-1 mt-2">
-                  <span className={`text-[9px] px-1.5 py-0.5 rounded-md font-bold uppercase ${
-                    completedItems.includes(item.id) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                  }`}>
-                    {completedItems.includes(item.id) ? 'Done' : 'Pending'}
-                  </span>
+                  {completedItems.includes(item.id) ? (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-md font-bold uppercase bg-green-100 text-green-700">
+                      Done
+                    </span>
+                  ) : (
+                    <a 
+                      href={`tel:${item.Phone}`}
+                      className="flex items-center gap-2 text-xs px-4 py-2 rounded-xl font-extrabold uppercase bg-white text-green-600 border-2 border-green-600 hover:bg-green-50 transition-all no-underline shadow-md"
+                    >
+                      <Phone size={14} />
+                      Call Now
+                    </a>
+                  )}
                   <span className="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-md font-bold uppercase">
                     {item.Category}
                   </span>
