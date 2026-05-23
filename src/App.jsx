@@ -6,8 +6,12 @@ import MapView from './components/MapView';
 import Sidebar from './components/Sidebar';
 import localData from './data/records.json';
 
-const API_URL = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-  ? 'http://localhost:5500/api'
+const API_URL = typeof window !== 'undefined' && (
+  window.location.hostname === 'localhost' ||
+  window.location.hostname === '127.0.0.1' ||
+  window.location.hostname.match(/^\d+\.\d+\.\d+\.\d+$/)
+)
+  ? `http://${window.location.hostname}:5500/api`
   : 'https://api.example.com/api'; // Placeholder
 
 // Hook for reactive window size
