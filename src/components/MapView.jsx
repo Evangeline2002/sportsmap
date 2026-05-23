@@ -77,38 +77,42 @@ function SelectedMarker({ selectedItem, completedItems }) {
       icon={redIcon}
       zIndexOffset={1000}
     >
-      <Popup autoPan={false}>
-        <div className="min-w-[180px]">
-          <h3 className="font-bold text-slate-900 border-b pb-1 mb-1 text-sm">{selectedItem.Name}</h3>
-          <p className="text-[11px] text-slate-600 mb-2 leading-tight">{selectedItem.Address}</p>
-          <div className="flex flex-col gap-2 mt-2">
+      <Popup autoPan={false} className="custom-popup">
+        <div className="min-w-[220px] md:min-w-[260px] p-1">
+          <div className="flex justify-between items-start mb-2 gap-4">
+            <h3 className="font-black text-slate-900 text-sm leading-tight">{selectedItem.Name}</h3>
+            <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-black uppercase tracking-tighter shrink-0 ${completedItems.includes(selectedItem.id) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+              }`}>
+              {completedItems.includes(selectedItem.id) ? 'Done' : 'Pending'}
+            </span>
+          </div>
+
+          <p className="text-[11px] text-slate-500 mb-4 leading-normal font-medium">{selectedItem.Address}</p>
+
+          <div className="grid grid-cols-2 gap-2">
             {!completedItems.includes(selectedItem.id) && (
               <a
                 href={`tel:${selectedItem.Phone}`}
-                className="flex items-center justify-center gap-2 text-[10px] px-3 py-2 rounded-lg font-extrabold uppercase bg-white text-green-600 border border-green-600 hover:bg-green-50 transition-all no-underline shadow-sm"
+                className="flex items-center justify-center gap-1.5 text-[10px] py-2.5 rounded-xl font-black uppercase tracking-wider bg-green-600 text-white hover:bg-green-700 transition-all no-underline shadow-sm active:scale-95"
               >
-                <Phone size={12} />
-                Call Now
+                <Phone size={12} strokeWidth={3} />
+                Call
               </a>
             )}
             <a
               href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${selectedItem.Name}, ${selectedItem.Address}, ${selectedItem.District}`)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2 text-[10px] px-3 py-2 rounded-lg font-extrabold uppercase bg-black text-white hover:bg-gray-900 transition-all no-underline shadow-sm"
+              className={`flex items-center justify-center gap-1.5 text-[10px] py-2.5 rounded-xl font-black uppercase tracking-wider bg-slate-900 text-white hover:bg-slate-800 transition-all no-underline shadow-md active:scale-95 ${!completedItems.includes(selectedItem.id) ? 'col-span-1' : 'col-span-2'}`}
             >
-              <Navigation size={12} />
-              Get Directions
+              <Navigation size={12} strokeWidth={3} />
+              Directions
             </a>
-            <div className="flex justify-between items-center mt-1">
-              <span className="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-md font-bold uppercase">
-                {selectedItem.Category}
-              </span>
-              <span className={`text-[9px] px-1.5 py-0.5 rounded-md font-bold uppercase ${completedItems.includes(selectedItem.id) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                }`}>
-                {completedItems.includes(selectedItem.id) ? 'Completed' : 'Pending'}
-              </span>
-            </div>
+          </div>
+
+          <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between">
+            <span className="text-[9px] font-black text-primary-600 uppercase tracking-widest">{selectedItem.Category}</span>
+            <span className="text-[9px] font-bold text-slate-300">#{selectedItem.id?.toString().slice(-6)}</span>
           </div>
         </div>
       </Popup>
