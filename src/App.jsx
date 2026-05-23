@@ -6,7 +6,9 @@ import MapView from './components/MapView';
 import Sidebar from './components/Sidebar';
 import localData from './data/records.json';
 
-const API_URL = 'http://localhost:5500/api';
+const API_URL = typeof window !== 'undefined' && window.location.hostname === 'localhost'
+  ? 'http://localhost:5500/api'
+  : 'https://your-production-api.com/api'; // Placeholder, will fallback to local data if unavailable
 
 // Hook for reactive window size
 function useWindowSize() {
@@ -51,7 +53,8 @@ function App() {
   const fetchRecords = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get(`${API_URL}/records`);
+      // Use a timeout to avoid waiting too long for a local server that might not be there
+      const response = await axios.get(`${API_URL}/records`, { timeout: 3000 });
       if (response.data && response.data.length > 0) {
         const processed = response.data.map(item => {
           const center = getDistrictCenter(item.District || item.district);
@@ -68,7 +71,7 @@ function App() {
         useFallbackData();
       }
     } catch (error) {
-      console.error("Error fetching records, using local data:", error);
+      console.warn("Could not reach backend API, switching to secure local data mode.", error.message);
       useFallbackData();
     } finally {
       setIsLoading(false);
