@@ -47,5 +47,8 @@ export const CATEGORIES = [
   "Cricket/Tennis/Hockey/Basketball/Volleyball",
   "School/Class/Badmitton",
   "Academy",
+  "Soapy Football",
+  "Pickleball",
+  "Shuttle",
   "Others"
 ];

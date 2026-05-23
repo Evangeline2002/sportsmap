@@ -23,15 +23,27 @@ async function seed() {
       const data = xlsx.utils.sheet_to_json(workbook.Sheets[name]);
       console.log(`Sheet ${name}: ${data.length} rows`);
       if (data.length > 0) {
-        combinedData = [...combinedData, ...data.map((item, idx) => ({
-          id: (item['S.No'] || `${name}-${idx}`).toString(),
-          District: item['District'] || item['District Name'] || name,
-          Category: item['Category'] || 'Others',
-          Address: item['Address'] || 'N/A',
-          Phone: (item['Phone'] || 'N/A').toString(),
-          Name: item['Name'] || `Facility ${idx + 1}`,
-          completed: false
-        }))];
+        combinedData = [...combinedData, ...data.map((item, idx) => {
+          const rowName = item['Name'] || item['Name '] || `Facility ${idx + 1}`;
+          let rowCategory = item['Category'];
+
+          if (!rowCategory || rowCategory === 'Others') {
+            if (rowName.toLowerCase().includes('pickle')) rowCategory = 'Pickleball';
+            else if (rowName.toLowerCase().includes('shuttle') || rowName.toLowerCase().includes('badminton')) rowCategory = 'Shuttle';
+            else if (name === 'Soapy football') rowCategory = 'Soapy Football';
+            else rowCategory = 'Others';
+          }
+
+          return {
+            id: (item['S.No'] || `${name}-${idx}`).toString(),
+            District: item['District'] || item['District Name'] || name,
+            Category: rowCategory,
+            Address: item['Address'] || 'N/A',
+            Phone: (item['Phone'] || 'N/A').toString(),
+            Name: rowName,
+            completed: false
+          };
+        })];
       }
     });
 

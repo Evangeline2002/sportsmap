@@ -49,8 +49,8 @@ function MapResizer({ selectedItem }) {
   const map = useMap();
 
   useEffect(() => {
-    if (selectedItem) {
-      map.flyTo([selectedItem.lat, selectedItem.lng], 15, {
+    if (selectedItem && !isNaN(parseFloat(selectedItem.lat)) && !isNaN(parseFloat(selectedItem.lng))) {
+      map.flyTo([parseFloat(selectedItem.lat), parseFloat(selectedItem.lng)], 15, {
         duration: 1.2
       });
     }
