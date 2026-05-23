@@ -149,8 +149,9 @@ const MapView = ({ items, selectedItem, onItemClick, completedItems, selectedDis
     <MapContainer
       center={tamilNaduCenter}
       zoom={7}
-      className="w-full h-full"
+      className="w-full h-full min-h-[500px] md:min-h-full"
       zoomControl={false}
+      style={{ height: '100%', width: '100%' }}
     >
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

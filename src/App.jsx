@@ -42,8 +42,12 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [showSummary, setShowSummary] = useState(false);
   const [activeTab, setActiveTab] = useState('list');
+
+  // Ensure data is always an array
+  useEffect(() => {
+    if (!Array.isArray(data)) setData([]);
+  }, [data]);
 
   const getDistrictCenter = (district) => {
     return TN_DISTRICTS.find(d =>
