@@ -1,18 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import axios from 'axios';
+import * as XLSX from 'xlsx';
 import { Search, Map as MapIcon, Upload, CheckCircle2, Loader2, BarChart3, ChevronDown, ChevronUp, List, Settings } from 'lucide-react';
 import { TN_DISTRICTS, CATEGORIES } from './utils/tnDistricts';
 import MapView from './components/MapView';
 import Sidebar from './components/Sidebar';
 import localData from './data/records.json';
-
-const API_URL = typeof window !== 'undefined' && (
-  window.location.hostname === 'localhost' ||
-  window.location.hostname === '127.0.0.1' ||
-  window.location.hostname.match(/^\d+\.\d+\.\d+\.\d+$/)
-)
-  ? `http://${window.location.hostname}:5500/api`
-  : 'https://api.example.com/api'; // Placeholder
 
 // Hook for reactive window size
 function useWindowSize() {
@@ -47,11 +39,18 @@ function App() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('list');
+  const [completedIds, setCompletedIds] = useState(() => {
+    try {
+      const saved = localStorage.getItem('tn-sports-completed');
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
 
-  // Ensure data is always an array
   useEffect(() => {
-    if (!Array.isArray(data)) setData([]);
-  }, [data]);
+    localStorage.setItem('tn-sports-completed', JSON.stringify(completedIds));
+  }, [completedIds]);
 
   const getDistrictCenter = (district) => {
     return TN_DISTRICTS.find(d =>
@@ -59,57 +58,32 @@ function App() {
     )?.center || [11.1271, 78.6569];
   };
 
-  const useFallbackData = () => {
+  const loadData = () => {
+    setIsLoading(true);
     try {
       const source = Array.isArray(localData) ? localData : [];
       const processed = source.map((item, index) => {
-        const center = getDistrictCenter(item.District || item.district);
+        const districtStr = item.District || item.district;
+        const center = getDistrictCenter(districtStr);
         return {
           ...item,
-          id: item.id ? `local-${item.District}-${item.id}` : `local-${index}`,
+          id: item.id ? `local-${districtStr}-${item.id}` : `local-${index}`,
           lat: parseFloat(item.lat) || (center[0] + (Math.random() - 0.5) * 0.1),
           lng: parseFloat(item.lng) || (center[1] + (Math.random() - 0.5) * 0.1),
-          completed: !!item.completed
         };
       });
       setData(processed);
       setFilteredData(processed);
     } catch (e) {
-      console.error("Critical fallback failure:", e);
+      console.error("Critical loading failure:", e);
       setData([]);
-    }
-  };
-
-  const fetchRecords = async () => {
-    setIsLoading(true);
-    try {
-      const response = await axios.get(`${API_URL}/records`, { timeout: 4000 });
-      if (response.data && Array.isArray(response.data) && response.data.length > 0) {
-        const processed = response.data.map(item => {
-          const center = getDistrictCenter(item.District || item.district);
-          return {
-            ...item,
-            id: item._id || item.id,
-            lat: parseFloat(item.lat) || center[0],
-            lng: parseFloat(item.lng) || center[1],
-            completed: !!item.completed
-          };
-        });
-        setData(processed);
-        setFilteredData(processed);
-      } else {
-        useFallbackData();
-      }
-    } catch (error) {
-      console.warn("Backend unreachable, using local store");
-      useFallbackData();
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchRecords();
+    loadData();
   }, []);
 
   useEffect(() => {
@@ -126,16 +100,10 @@ function App() {
     setFilteredData(result);
   }, [selectedDistrict, selectedCategory, data]);
 
-  const toggleComplete = async (id) => {
-    const item = data.find(i => i.id === id);
-    if (!item) return;
-    const newStatus = !item.completed;
-    setData(prev => prev.map(i => i.id === id ? { ...i, completed: newStatus } : i));
-    try {
-      await axios.patch(`${API_URL}/records/${id}`, { completed: newStatus });
-    } catch (error) {
-      // Ignore fail in local mode
-    }
+  const toggleComplete = (id) => {
+    setCompletedIds(prev =>
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
   };
 
   const districtSummary = useMemo(() => {
@@ -145,28 +113,62 @@ function App() {
       const d = item.District || item.district || 'Unknown';
       if (!summary[d]) summary[d] = { total: 0, completed: 0 };
       summary[d].total++;
-      if (item.completed) summary[d].completed++;
+      if (completedIds.includes(item.id)) summary[d].completed++;
     });
     return Object.entries(summary).sort((a, b) => b[1].total - a[1].total);
-  }, [data]);
+  }, [data, completedIds]);
 
-  const handleFileUpload = async (e) => {
+  const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const formData = new FormData();
-    formData.append('file', file);
+
     setIsLoading(true);
-    try {
-      const response = await axios.post(`${API_URL}/upload`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      alert(`Imported ${response.data.count} records!`);
-      fetchRecords();
-    } catch (error) {
-      alert("Import failed. Local mode does not support uploads.");
-    } finally {
+    const reader = new FileReader();
+
+    reader.onload = (evt) => {
+      try {
+        const bstr = evt.target.result;
+        const wb = XLSX.read(bstr, { type: 'binary' });
+
+        let allRecords = [];
+        wb.SheetNames.forEach(sheetName => {
+          const ws = wb.Sheets[sheetName];
+          const data = XLSX.utils.sheet_to_json(ws);
+
+          const processed = data.map((item, index) => {
+            const districtStr = item.District || item.district || sheetName;
+            const center = getDistrictCenter(districtStr);
+            return {
+              ...item,
+              id: `import-${sheetName}-${index}`,
+              District: districtStr,
+              lat: parseFloat(item.lat) || (center[0] + (Math.random() - 0.5) * 0.1),
+              lng: parseFloat(item.lng) || (center[1] + (Math.random() - 0.5) * 0.1),
+              completed: false
+            };
+          });
+          allRecords = [...allRecords, ...processed];
+        });
+
+        if (allRecords.length > 0) {
+          setData(allRecords);
+          setFilteredData(allRecords);
+          alert(`Successfully imported ${allRecords.length} records across ${wb.SheetNames.length} sheets!`);
+        }
+      } catch (error) {
+        console.error("Excel processing failed:", error);
+        alert("Failed to process Excel file. Please ensure it's a valid XLSX/XLS file.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    reader.onerror = () => {
+      alert("File reading failed.");
       setIsLoading(false);
-    }
+    };
+
+    reader.readAsBinaryString(file);
   };
 
   const handleViewOnMap = (item) => {
