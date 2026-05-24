@@ -16,6 +16,10 @@ body {
 
 #root {
   width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 .leaflet-container {
@@ -23,6 +27,10 @@ body {
   height: 100%;
   border-radius: 0.75rem;
   z-index: 1;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 /* Custom Scrollbar */
@@ -79,20 +87,4 @@ body {
 .backdrop-blur-lg {
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
-}
-#root{
-  width:100%;
-  height:100%;
-  margin:0;
-  padding:0;
-  overflow:hidden;
-}
-
-*{
-  box-sizing:border-box;
-}
-
-.leaflet-container{
-  width:100%;
-  height:100%;
 }
