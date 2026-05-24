@@ -41,15 +41,24 @@ function App() {
   const [activeTab, setActiveTab] = useState('list');
   const [completedIds, setCompletedIds] = useState(() => {
     try {
-      const saved = localStorage.getItem('tn-sports-completed');
-      return saved ? JSON.parse(saved) : [];
+      if (typeof window !== 'undefined' && window.localStorage) {
+        const saved = localStorage.getItem('tn-sports-completed');
+        return saved ? JSON.parse(saved) : [];
+      }
     } catch (e) {
-      return [];
+      console.warn("localStorage not available");
     }
+    return [];
   });
 
   useEffect(() => {
-    localStorage.setItem('tn-sports-completed', JSON.stringify(completedIds));
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        localStorage.setItem('tn-sports-completed', JSON.stringify(completedIds));
+      }
+    } catch (e) {
+      // Ignore storage errors
+    }
   }, [completedIds]);
 
   const getDistrictCenter = (district) => {
