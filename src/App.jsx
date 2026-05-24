@@ -63,11 +63,12 @@ function App() {
     try {
       const source = Array.isArray(localData) ? localData : [];
       const processed = source.map((item, index) => {
-        const districtStr = item.District || item.district;
+        const districtStr = item.District || item.district || 'Unknown';
         const center = getDistrictCenter(districtStr);
+        const originalId = item.id || item._id || index;
         return {
           ...item,
-          id: item.id ? `local-${districtStr}-${item.id}` : `local-${index}`,
+          id: `local-${districtStr}-${originalId}-${index}`,
           lat: parseFloat(item.lat) || (center[0] + (Math.random() - 0.5) * 0.1),
           lng: parseFloat(item.lng) || (center[1] + (Math.random() - 0.5) * 0.1),
         };
