@@ -83,7 +83,7 @@ function SelectedMarker({ selectedItem, completedItems }) {
             <h3 className="font-black text-slate-900 text-sm leading-tight">{selectedItem.Name}</h3>
             <span className={`text-[8px] px-1.5 py-0.5 rounded-full font-black uppercase tracking-tighter shrink-0 ${completedItems.includes(selectedItem.id) ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
               }`}>
-              {completedItems.includes(selectedItem.id) ? 'Done' : 'Pending'}
+              {completedItems.includes(selectedItem.id) ? 'Visited' : 'Pending'}
             </span>
           </div>
 
@@ -191,7 +191,7 @@ const MapView = ({ items, selectedItem, onItemClick, completedItems, selectedDis
                     </a>
                   ) : (
                     <span className="text-[9px] px-1.5 py-0.5 rounded-md font-bold uppercase bg-green-100 text-green-700">
-                      Done
+                      Visited
                     </span>
                   )}
                   <span className="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded-md font-bold uppercase">

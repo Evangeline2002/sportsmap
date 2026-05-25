@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import * as XLSX from 'xlsx';
-import { Search, Map as MapIcon, Upload, CheckCircle2, Loader2, BarChart3, ChevronDown, ChevronUp, List, Settings } from 'lucide-react';
+import { Search, Map as MapIcon, Upload, CheckCircle2, Loader2, BarChart3, ChevronDown, ChevronUp, List, Settings, Server, TrendingUp } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { TN_DISTRICTS, CATEGORIES } from './utils/tnDistricts';
 import MapView from './components/MapView';
 import Sidebar from './components/Sidebar';
@@ -216,7 +217,7 @@ function App() {
             items={filteredData || []}
             selectedItem={selectedItem}
             onItemClick={setSelectedItem}
-            completedItems={(data || []).filter(i => i.completed).map(i => i.id)}
+            completedItems={completedIds}
             selectedDistrict={selectedDistrict}
             allDistricts={TN_DISTRICTS}
           />
@@ -233,7 +234,7 @@ function App() {
               selectedCategory={selectedCategory}
               setSelectedCategory={setSelectedCategory}
               toggleComplete={toggleComplete}
-              completedItems={(data || []).filter(i => i.completed).map(i => i.id)}
+              completedItems={completedIds}
               onViewOnMap={handleViewOnMap}
             />
           )}
@@ -277,6 +278,52 @@ function App() {
           <span className="text-[10px] font-black uppercase">Stats</span>
         </button>
       </div>
+
+      {/* Desktop Footer */}
+      <footer className="hidden md:flex h-10 bg-[#0f172a] text-slate-400 text-[10px] font-black items-center justify-between px-6 z-20 shrink-0 border-t border-slate-800/50 uppercase tracking-[0.15em]">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2.5">
+            <div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)] animate-pulse" />
+            <span className="text-slate-300">GIS System Active</span>
+          </div>
+
+          <div className="h-4 w-[1px] bg-slate-800" />
+
+          <div className="flex items-center gap-4">
+            <span>
+              Completed Visits: <span className="text-blue-500 text-sm ml-1">{completedIds.length}</span>
+              <span className="text-slate-600 ml-1.5 font-bold">/ {data.length}</span>
+            </span>
+
+            <button
+              onClick={() => {
+                if (confirm('Are you sure you want to clear all progress?')) {
+                  setCompletedIds([]);
+                }
+              }}
+              className="px-4 py-1.5 bg-slate-800/50 hover:bg-slate-800 border border-slate-700/50 rounded-lg text-[9px] text-slate-100 transition-all active:scale-95"
+            >
+              Clear Progress
+            </button>
+          </div>
+        </div>
+
+        <div className="flex flex-col items-end gap-1.5 min-w-[200px]">
+          <div className="flex items-center gap-2">
+            <span className="text-slate-500">Workflow Progress</span>
+            <span className="text-blue-500 text-sm">
+              {data.length > 0 ? Math.round((completedIds.length / data.length) * 100) : 0}%
+            </span>
+          </div>
+          <div className="w-full h-[3px] bg-slate-800 rounded-full overflow-hidden">
+            <motion.div
+              initial={{ width: 0 }}
+              animate={{ width: `${data.length > 0 ? (completedIds.length / data.length) * 100 : 0}%` }}
+              className="h-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)]"
+            />
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

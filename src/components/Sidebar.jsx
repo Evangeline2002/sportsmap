@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Filter, Phone, MapPin, Target, Star, X, Upload } from 'lucide-react';
+import { Search, Filter, Phone, MapPin, Target, Star, X, Upload, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const Sidebar = ({
@@ -121,7 +121,7 @@ const Sidebar = ({
                     {item.Category || 'GENERAL'}
                   </span>
                   <span className={`text-[11px] font-black uppercase tracking-wider ${completedItems.includes(item.id) ? 'text-green-600' : 'text-red-500'}`}>
-                    {completedItems.includes(item.id) ? 'COMPLETED' : 'PENDING'}
+                    {completedItems.includes(item.id) ? 'VISITED' : 'PENDING'}
                   </span>
                 </div>
 
@@ -155,8 +155,8 @@ const Sidebar = ({
                       : 'bg-white text-slate-800 border-slate-200 hover:bg-slate-50'
                       }`}
                   >
-                    <Star size={18} strokeWidth={2.5} className={completedItems.includes(item.id) ? 'fill-white' : ''} />
-                    {completedItems.includes(item.id) ? 'Marked' : 'Mark'}
+                    {completedItems.includes(item.id) ? <CheckCircle2 size={18} strokeWidth={2.5} className="text-white" /> : <Star size={18} strokeWidth={2.5} className="" />}
+                    {completedItems.includes(item.id) ? 'Visited' : 'Mark'}
                   </button>
                 </div>
               </motion.div>
